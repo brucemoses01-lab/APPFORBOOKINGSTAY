@@ -1,81 +1,121 @@
 
 import java.util.*;
 
-// Reservation represents a guest’s intent to book a room
-class Reservation {
-    private String guestName;
-    private String roomType;
+// Add-On Service represents an optional offering
+class AddOnService {
+    private String name;
+    private double cost;
 
-    public Reservation(String guestName, String roomType) {
-        this.guestName = guestName;
-        this.roomType = roomType;
+    public AddOnService(String name, double cost) {
+        this.name = name;
+        this.cost = cost;
     }
 
-    public String getGuestName() {
-        return guestName;
+    public String getName() {
+        return name;
     }
 
-    public String getRoomType() {
-        return roomType;
+    public double getCost() {
+        return cost;
     }
 
     @Override
     public String toString() {
-        return "Reservation Request -> Guest: " + guestName + ", Room Type: " + roomType;
+        return name + " ($" + cost + ")";
     }
 }
 
-        // Booking Request Queue (FIFO)
-        class BookingRequestQueue {
-            private Queue<Reservation> requestQueue;
+        // Reservation represents a confirmed booking
+        class Reservation {
+            private String reservationId;
+            private String guestName;
+            private String roomType;
 
-            public BookingRequestQueue() {
-                requestQueue = new LinkedList<>();
+            public Reservation(String reservationId, String guestName, String roomType) {
+                this.reservationId = reservationId;
+                this.guestName = guestName;
+                this.roomType = roomType;
             }
 
-            // Accept booking request
-            public void addRequest(Reservation reservation) {
-                requestQueue.offer(reservation); // FIFO insertion
-                System.out.println("Request added: " + reservation);
+            public String getReservationId() {
+                return reservationId;
             }
 
-            // View all queued requests (without processing)
-            public void viewRequests() {
-                System.out.println("\n--- Current Booking Requests in Queue ---");
-                for (Reservation r : requestQueue) {
-                    System.out.println(r);
-                }
+            public String getGuestName() {
+                return guestName;
             }
 
-            // Retrieve next request (for later allocation system)
-            public Reservation getNextRequest() {
-                return requestQueue.poll(); // FIFO retrieval
+            public String getRoomType() {
+                return roomType;
             }
 
-            public boolean hasRequests() {
-                return !requestQueue.isEmpty();
+            @Override
+            public String toString() {
+                return "Reservation -> ID: " + reservationId +
+                        ", Guest: " + guestName +
+                        ", Room Type: " + roomType;
+            }
+        }
+
+        // Add-On Service Manager maps reservations to selected services
+        class AddOnServiceManager {
+            private Map<String, List<AddOnService>> serviceMap;
+
+            public AddOnServiceManager() {
+                serviceMap = new HashMap<>();
+            }
+
+            // Attach services to a reservation
+            public void addServices(String reservationId, List<AddOnService> services) {
+                serviceMap.putIfAbsent(reservationId, new ArrayList<>());
+                serviceMap.get(reservationId).addAll(services);
+                System.out.println("Services added for Reservation ID: " + reservationId);
+            }
+
+            // View services for a reservation
+            public List<AddOnService> getServices(String reservationId) {
+                return serviceMap.getOrDefault(reservationId, Collections.emptyList());
+            }
+
+            // Calculate total additional cost
+            public double calculateAdditionalCost(String reservationId) {
+                return getServices(reservationId).stream()
+                        .mapToDouble(AddOnService::getCost)
+                        .sum();
             }
         }
 
         // Main Program
         public class APPFORBOOKINGSTAY {
             public static void main(String[] args) {
-                BookingRequestQueue bookingQueue = new BookingRequestQueue();
+                // Step 1: Create Reservations
+                Reservation res1 = new Reservation("R001", "Alice", "Deluxe");
+                Reservation res2 = new Reservation("R002", "Bob", "Standard");
 
-                // Guests submit booking requests
-                bookingQueue.addRequest(new Reservation("Alice", "Deluxe"));
-                bookingQueue.addRequest(new Reservation("Bob", "Standard"));
-                bookingQueue.addRequest(new Reservation("Charlie", "Suite"));
+                // Step 2: Define Add-On Services
+                AddOnService breakfast = new AddOnService("Breakfast", 20.0);
+                AddOnService airportPickup = new AddOnService("Airport Pickup", 50.0);
+                AddOnService spaAccess = new AddOnService("Spa Access", 40.0);
 
-                // View queued requests (no inventory mutation yet)
-                bookingQueue.viewRequests();
+                // Step 3: Manage Add-On Services
+                AddOnServiceManager manager = new AddOnServiceManager();
 
-                // Demonstrate FIFO order retrieval
-                System.out.println("\n--- Processing Requests in FIFO Order ---");
-                while (bookingQueue.hasRequests()) {
-                    Reservation next = bookingQueue.getNextRequest();
-                    System.out.println("Processing: " + next);
-                }
+                // Guest Alice selects Breakfast + Spa
+                manager.addServices(res1.getReservationId(), Arrays.asList(breakfast, spaAccess));
+
+                // Guest Bob selects Airport Pickup
+                manager.addServices(res2.getReservationId(), Arrays.asList(airportPickup));
+
+                // Step 4: Display results
+                System.out.println("\n--- Reservation Details with Add-On Services ---");
+                System.out.println(res1);
+                System.out.println("Selected Services: " + manager.getServices(res1.getReservationId()));
+                System.out.println("Additional Cost: $" + manager.calculateAdditionalCost(res1.getReservationId()));
+
+                System.out.println();
+                System.out.println(res2);
+                System.out.println("Selected Services: " + manager.getServices(res2.getReservationId()));
+                System.out.println("Additional Cost: $" + manager.calculateAdditionalCost(res2.getReservationId()));
             }
         }
 

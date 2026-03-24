@@ -1,20 +1,88 @@
-public class APPFORBOOKINGSTAY{
-    public static void main(String[] args) {
+import java.util.HashMap;
+import java.util.Map;
 
-        // Application Name and Version
-        String appName = "Book My Stay";
-        String version = "v1.0";
+/**
+ * ============================================================
+ * CLASS - RoomInventory
+ * ============================================================
+ *
+ * Use Case 3: Centralized Room Inventory Management
+ *
+ * Description:
+ * This class acts as the single source of truth
+ * for room availability in the hotel.
+ *
+ * Room pricing and characteristics are obtained
+ * from Room objects, not duplicated here.
+ *
+ * This avoids multiple sources of truth and
+ * keeps responsibilities clearly separated.
+ *
+ * @version 3.1
+ */
+class RoomInventory{
 
-        // Welcome Message
-        System.out.println("==================================================");
-        System.out.println(" Welcome to " + appName + " Application ");
-        System.out.println(" Version: " + version);
-        System.out.println("==================================================");
+    /**
+     * Stores available room count for each room type.
+     *
+     * Key   -> Room type name
+     * Value -> Available room count
+     */
+    private Map<String, Integer> roomAvailability;
 
-        // System Status Message
-        System.out.println("System started successfully.");
-        System.out.println("Application is ready for further operations.");
+    /**
+     * Constructor initializes the inventory
+     * with default availability values.
+     */
+    public RoomInventory() {
+        roomAvailability = new HashMap<>();
+        initializeInventory();
+    }
 
+    /**
+     * Initializes room availability data.
+     *
+     * This method centralizes inventory setup
+     * instead of using scattered variables.
+     */
+    private void initializeInventory() {
+        roomAvailability.put("Single", 5);
+        roomAvailability.put("Double", 3);
+        roomAvailability.put("Suite", 2);
+    }
+
+    /**
+     * Returns the current availability map.
+     *
+     * @return map of room type to available count
+     */
+    public Map<String, Integer> getRoomAvailability() {
+        return roomAvailability;
+    }
+
+    /**
+     * Updates availability for a specific room type.
+     *
+     * @param roomType the room type to update
+     * @param count new availability count
+     */
+    public void updateAvailability(String roomType, int count) {
+        roomAvailability.put(roomType, count);
     }
 }
+public class APPFORBOOKINGSTAY {
 
+    public static void main(String[] args) {
+
+        RoomInventory inventory = new RoomInventory();
+
+        System.out.println("=== Initial Inventory ===");
+        System.out.println(inventory.getRoomAvailability());
+
+        // Update availability
+        inventory.updateAvailability("Single", 4);
+
+        System.out.println("\n=== Updated Inventory ===");
+        System.out.println(inventory.getRoomAvailability());
+    }
+}
